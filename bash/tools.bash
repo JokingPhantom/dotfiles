@@ -1,4 +1,6 @@
 # Integrations, each loaded only when the tool is installed.
+# fzf runs its *_COMMAND and *_OPTS strings through sh, so quotes in them are literal on purpose.
+# shellcheck disable=SC2089,SC2090
 
 # Programmable completion (Linux; Homebrew on macOS).
 if ! shopt -oq posix; then
@@ -72,12 +74,9 @@ if __dotfiles_have fzf; then
   if __dotfiles_have fd || __dotfiles_have fdfind; then
     FZF_DEFAULT_COMMAND="$(__dotfiles_which fd || __dotfiles_which fdfind) --type f --hidden --exclude .git"
   elif __dotfiles_have rg; then
-    # fzf runs this string through sh, so the quotes are meant literally.
-    # shellcheck disable=SC2089
     FZF_DEFAULT_COMMAND="rg --files --hidden --glob '!.git'"
   fi
   if [ -n "${FZF_DEFAULT_COMMAND:-}" ]; then
-    # shellcheck disable=SC2090
     export FZF_DEFAULT_COMMAND FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
   fi
   if __dotfiles_have bat || __dotfiles_have batcat; then
