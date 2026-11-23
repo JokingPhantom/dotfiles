@@ -1,0 +1,7 @@
+# Global gitignore (installed to ~/.config/git/ignore). Only OS and editor
+# files that never belong in any repo; project files go in that project's .gitignore.
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

@@ -1,0 +1,26 @@
+" Small, plugin-free vimrc for quick edits and commit messages.
+set nocompatible
+syntax on
+filetype plugin indent on
+
+set number
+set ruler
+set showcmd
+set laststatus=2
+set scrolloff=5
+set backspace=indent,eol,start
+
+set incsearch hlsearch ignorecase smartcase
+nnoremap <silent> <Esc><Esc> :nohlsearch<CR>
+
+set expandtab shiftwidth=2 softtabstop=2 tabstop=8
+set autoindent
+
+" Keep undo history across sessions; keep swap files out of the working tree.
+if !isdirectory($HOME . '/.vim/undo') | call mkdir($HOME . '/.vim/undo', 'p') | endif
+if !isdirectory($HOME . '/.vim/swap') | call mkdir($HOME . '/.vim/swap', 'p') | endif
+set undofile undodir=~/.vim/undo//
+set directory=~/.vim/swap//
+
+" Wrap commit messages at 72 and spell-check them.
+autocmd FileType gitcommit setlocal textwidth=72 spell
