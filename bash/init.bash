@@ -4,13 +4,20 @@
 # prompt goes last so its PROMPT_COMMAND hook runs before any other tool's and
 # can still read the previous command's exit status.
 
+DOTFILES="${DOTFILES:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+export DOTFILES
+
+# kb- commands are on PATH even in non-interactive shells (ssh host cmd,
+# scripts, AI agents). Appended, so they never shadow anything.
+case ":$PATH:" in
+  *":$DOTFILES/bin:"*) ;;
+  *) export PATH="$PATH:$DOTFILES/bin" ;;
+esac
+
 case $- in
   *i*) ;;
   *) return ;;
 esac
-
-DOTFILES="${DOTFILES:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-export DOTFILES
 
 for __dotfiles_module in env history aliases functions tools prompt; do
   # shellcheck source=/dev/null

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# kb-cp: copy recursively, asking before overwriting, and list what was copied
+#
+# Usage: kb-cp SOURCE... DEST
+exec cp -Riv "$@"

@@ -2,7 +2,7 @@
 # Install these dotfiles into $HOME. Safe to re-run.
 #
 #   ./install.sh            set up bash, git, readline, vim
-#   ./install.sh --tools    also install optional CLI tools (bat, fd, eza, delta, zoxide, ...)
+#   ./install.sh --tools    also install optional CLI tools the kb- commands use (bat, fd, eza, delta, ...)
 #   ./install.sh --dry-run  print what would change
 #
 # ~/.bashrc and ~/.gitconfig stay machine-local files that source/include this
@@ -97,8 +97,8 @@ install_gitconfig() {
 }
 
 install_tools() {
-  local apt_pkgs="bat fd-find ripgrep fzf eza git-delta zoxide shellcheck tmux"
-  local brew_pkgs="bash bash-completion@2 bat fd ripgrep fzf eza git-delta zoxide shellcheck tmux"
+  local apt_pkgs="bat fd-find ripgrep fzf eza git-delta zoxide shellcheck tmux tree htop trash-cli"
+  local brew_pkgs="bash bash-completion@2 bat fd ripgrep fzf eza git-delta zoxide shellcheck tmux tree htop watch"
   if command -v brew >/dev/null 2>&1; then
     # shellcheck disable=SC2086
     run brew install $brew_pkgs

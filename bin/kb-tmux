@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# kb-tmux: attach to a tmux session, creating it if needed (default name: main)
+#
+# Usage: kb-tmux [SESSION]
+exec tmux new-session -A -s "${1:-main}"

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# kb-git-log: one line per commit with hash, date, relative date, author, subject, and refs
+#
+# Usage: kb-git-log [GIT-LOG OPTIONS]      e.g.  kb-git-log -20   kb-git-log --graph --all
+exec git log --date=format-local:'%Y-%m-%d %H:%M' \
+  --pretty='%C(yellow)%h%C(reset)  %ad %C(green)(%cr)%C(reset)  %C(cyan)%<(16,trunc)%an%C(reset) %s%C(auto)%d%C(reset)' \
+  "$@"

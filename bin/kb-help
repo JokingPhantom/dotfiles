@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# kb-help: list every kb- command, or show one command's usage
+#
+# Usage: kb-help              list all commands
+#        kb-help kb-COMMAND   usage for one command
+# Commands are bin/kb-* scripts plus shell functions documented with a
+# "# kb-NAME: summary" comment in bash/functions.bash or ~/.bashrc.d/*.bash.
+DOTFILES=${DOTFILES:-$(cd "${BASH_SOURCE[0]%/*}/.." && pwd)}
+sources=("$DOTFILES/bash/functions.bash")
+for f in "$HOME"/.bashrc.d/*.bash; do [ -r "$f" ] && sources+=("$f"); done
+
+if [ $# -gt 0 ]; then
+  name=$1
+  case $name in kb-*) ;; *) name=kb-$name ;; esac
+  if [ -f "$DOTFILES/bin/$name" ]; then
+    # The comment block after the shebang.
+    awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$DOTFILES/bin/$name"
+    exit
+  fi
+  # A shell function: its comment block.
+  awk -v n="$name" '
+    $0 ~ "^# " n ": " { on = 1 }
+    on && /^#/ { sub(/^# ?/, ""); print; next }
+    on { exit }' "${sources[@]}" | grep . || { echo "kb-help: no command $name" >&2; exit 1; }
+  exit
+fi
+
+{
+  for f in "$DOTFILES"/bin/kb-*; do sed -n '2s/^# //p' "$f"; done
+  grep -h '^# kb-[a-z0-9-]*: ' "${sources[@]}" | sed 's/^# //'
+} | sort | awk -F': ' '{ name = $1; sub(/^[^:]*: /, ""); printf "%-28s %s\n", name, $0 }'

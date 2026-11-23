@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# kb-test: run kb-rspec and kb-jest for what this branch changed
+#
+# Usage: kb-test [BASE]
+# Skips RSpec without a Gemfile and Jest without a package.json. Fails if either fails.
+cd "$(git rev-parse --show-toplevel)" || exit
+status=0
+if [ -f Gemfile ]; then kb-rspec "$@" || status=1; fi
+if [ -f package.json ]; then kb-jest "$@" || status=1; fi
+exit $status

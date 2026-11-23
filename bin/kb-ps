@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# kb-ps: processes by CPU use; top 25, or all matching PATTERN (case-insensitive)
+#
+# Usage: kb-ps [PATTERN]
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if [ "$(kb_os)" = macos ]; then out=$(ps aux -r); else out=$(ps aux --sort=-%cpu); fi
+
+if [ $# -eq 0 ]; then
+  printf '%s\n' "$out" | awk 'NR <= 26'
+else
+  printf '%s\n' "$out" | awk -v p="$*" -v self=$$ 'NR == 1 || ($2 != self && index(tolower($0), tolower(p)))'
+fi

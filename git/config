@@ -37,33 +37,4 @@
 	navigate = true
 	line-numbers = true
 
-[alias]
-	st = status -sb
-	sw = switch
-	dn = diff --name-only
-	last = lg -1 --stat
-	amend = commit --amend --no-edit
-	unstage = restore --staged
-	undo = reset --soft HEAD~1
-
-	# One line per commit: hash, date (relative), author, subject, refs.
-	lg = log --date=format-local:'%Y-%m-%d %H:%M' --pretty='%C(yellow)%h%C(reset)  %ad %C(green)(%cr)%C(reset)  %C(cyan)%<(16,trunc)%an%C(reset) %s%C(auto)%d%C(reset)'
-	lga = lg --graph --all
-
-	# Local branches, most recent last (just above the prompt), with ahead/behind.
-	# git br [N|all]   default 30
-	br = "!f() { n=${1:-30}; [ \"$n\" = all ] && n=0; \
-		git for-each-ref --sort=-committerdate --count=\"$n\" --color=always refs/heads/ \
-		--format='%(HEAD) %(color:yellow)%(align:40)%(refname:short)%(end)%(color:reset) %(color:red)%(objectname:short)%(color:reset) %(color:green)%(align:15)%(committerdate:relative)%(end)%(color:reset) %(color:magenta)%(align:12)%(upstream:track)%(end)%(color:reset) %(contents:subject) %(color:blue)- %(authorname)%(color:reset)' \
-		| awk '{ l[NR] = $0 } END { for (i = NR; i > 0; i--) print l[i] }'; }; f"
-
-	# Default branch of origin, e.g. origin/main.
-	default-branch = "!git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || echo main"
-
-	# Files this branch touches: committed since it forked from BASE (default:
-	# origin's default branch), plus uncommitted and untracked. Deleted files are
-	# left out. Paths are relative to the repo root.
-	# git changed [BASE] [-- PATHSPEC...]     e.g.  git changed -- '*.rb'
-	changed = "!f() { base=; if [ $# -gt 0 ] && [ \"$1\" != -- ]; then base=$1; shift; fi; [ \"$1\" = -- ] && shift; \
-		mb=$(git merge-base HEAD \"${base:-$(git default-branch)}\") || return; \
-		{ git diff --name-only --diff-filter=d \"$mb\" -- \"$@\"; git ls-files --others --exclude-standard -- \"$@\"; } | sort -u; }; f"
+# No aliases here: custom commands are kb-git-* scripts in bin/ (run kb-help).

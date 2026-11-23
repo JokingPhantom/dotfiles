@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# kb-git-switch: switch branch; with no argument, pick a recent branch with fzf
+#
+# Usage: kb-git-switch [BRANCH | GIT-SWITCH OPTIONS]
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if [ $# -gt 0 ] || ! kb_have fzf; then exec git switch "$@"; fi
+branch=$(git for-each-ref --sort=-committerdate --format='%(refname:short)' refs/heads/ |
+  fzf --prompt='switch> ' --preview="kb-git-log -20 --color=always {}") || exit
+exec git switch "$branch"

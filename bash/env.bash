@@ -30,22 +30,10 @@ export PATH
 
 export EDITOR="${EDITOR:-vim}"
 export VISUAL="${VISUAL:-$EDITOR}"
-export PAGER=less
+# Programs that page (git, man, psql, delta) use kb-less; typing `less` stays stock.
+export PAGER=kb-less
 
-# less: -R keep colors, -F quit if it fits on one screen, -i smart-case search,
-# -M verbose status line, -j.3 put search hits a third of the way down, -x4 tabs.
-LESS='-R -F -i -M -j.3 -x4'
-__less_version=$(less --version 2>/dev/null | awk 'NR==1 { print $2 + 0 }')
-if [ "${__less_version:-0}" -lt 530 ]; then
-  LESS="$LESS -X" # older less blanks the screen on exit when -F applies
-fi
-if [ "${__less_version:-0}" -ge 581 ]; then
-  LESS="$LESS --incsearch"
-fi
-export LESS
-unset __less_version
-
-# Make less open archives, PDFs, etc. via lesspipe when installed.
+# Make less open archives, PDFs, etc. via lesspipe, as Debian's default bashrc does.
 if __dotfiles_have lesspipe; then
   eval "$(SHELL=/bin/sh lesspipe)"
 elif __dotfiles_have lesspipe.sh; then

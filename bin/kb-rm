@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# kb-rm: move files to the trash instead of deleting them
+#
+# Usage: kb-rm FILE...
+# Uses trash-cli, macOS's trash (14+), or gio. rm-style flags (-r, -f, -rf)
+# are accepted and ignored. With no trash tool, falls back to rm that
+# confirms first (GNU rm -I, BSD rm -i).
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+files=()
+for arg in "$@"; do
+  case $arg in
+    -[rRfiv]*) ;; # rm flags mean nothing to a trash can
+    --) ;;
+    *) files+=("$arg") ;;
+  esac
+done
+[ ${#files[@]} -gt 0 ] || kb_die "usage: kb-rm FILE..."
+
+if kb_have trash-put; then trash-put -- "${files[@]}"
+elif [ "$(kb_os)" = macos ] && kb_have trash; then trash "${files[@]}"
+elif kb_have gio; then gio trash -- "${files[@]}"
+elif kb_gnu rm; then exec rm -Irv -- "${files[@]}"
+else exec rm -irv -- "${files[@]}"
+fi && printf 'Moved to trash: %s\n' "${files[*]}"

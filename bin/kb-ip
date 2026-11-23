@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# kb-ip: this machine's network interfaces and addresses, one line each
+#
+# Usage: kb-ip              local interfaces
+#        kb-ip --public     public IP address (asks api.ipify.org)
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if [ "${1:-}" = --public ]; then
+  curl -fsS https://api.ipify.org && echo
+  exit
+fi
+
+if kb_have ip; then
+  if ip -c=auto -br addr >/dev/null 2>&1; then exec ip -c=auto -br addr show "$@"; fi
+  exec ip -br addr show "$@"
+fi
+
+for iface in $(ifconfig -l); do # macOS/BSD
+  addrs=$(ifconfig "$iface" | awk '$1 == "inet" || ($1 == "inet6" && $2 !~ /^fe80/) { printf "%s ", $2 }')
+  status=$(ifconfig "$iface" | awk '/status:/ { print $2 }')
+  [ -n "$addrs" ] && printf '%-12s %-10s %s\n' "$iface" "${status:-UP}" "$addrs"
+done

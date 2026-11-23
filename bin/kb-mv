@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# kb-mv: move, asking before overwriting, and list what was moved
+#
+# Usage: kb-mv SOURCE... DEST
+exec mv -iv "$@"

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# kb-dig: DNS lookup showing just the answer records
+#
+# Usage: kb-dig NAME [TYPE] [@SERVER]      e.g.  kb-dig example.com MX
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+[ $# -gt 0 ] || kb_die "usage: kb-dig NAME [TYPE] [@SERVER]"
+if kb_have dig; then exec dig +noall +answer "$@"; fi
+exec host "$@"

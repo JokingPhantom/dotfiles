@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# kb-prettier: format the JS/TS/CSS files this branch changed (prettier --write)
+#
+# Usage: kb-prettier [BASE]      BASE defaults to origin's default branch
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+files=()
+while IFS= read -r f; do [ -n "$f" ] && files+=("$f"); done < <(kb-git-changed ${1:+"$1"} -- \
+  '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' '*.cjs' '*.css' '*.less' '*.scss')
+[ ${#files[@]} -gt 0 ] || { echo "No changed JS/TS/CSS files."; exit 0; }
+cd "$(git rev-parse --show-toplevel)" || exit
+# shellcheck disable=SC2046
+exec $(kb_package_runner) prettier --write "${files[@]}"

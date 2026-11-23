@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# kb-mysql: mysql client that pages wide results, goes vertical when rows don't fit, and shows warnings
+#
+# Usage: kb-mysql [OPTIONS] [DATABASE]
+#        kb-mysql -e 'SHOW FULL PROCESSLIST'
+#        kb-mysql -B -e 'select ...' | kb-tsv2csv > out.csv
+# The prompt shows user@host [database].
+exec mysql --auto-vertical-output --show-warnings --pager='less -SFRX' --prompt='\u@\h [\d]> ' "$@"

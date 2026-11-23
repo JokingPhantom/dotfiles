@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# kb-free: memory use in human units (Linux free -h; a matching summary on macOS)
+#
+# Usage: kb-free
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if [ "$(kb_os)" != macos ]; then exec free -h "$@"; fi
+
+vm_stat | awk -v total="$(sysctl -n hw.memsize)" '
+  /page size of/ { page = $8 }
+  /^Pages free/ { free = $3 } /^Pages speculative/ { spec = $3 }
+  /^Pages active/ { active = $3 } /^Pages inactive/ { inactive = $3 }
+  /^Pages wired down/ { wired = $4 } /occupied by compressor/ { comp = $5 }
+  function gib(pages) { return sprintf("%.1fGi", pages * page / 1073741824) }
+  END {
+    printf "%-8s %8s %8s %8s %8s %8s\n", "", "total", "used", "free", "cached", "compressed"
+    printf "%-8s %8s %8s %8s %8s %8s\n", "Mem:", sprintf("%.1fGi", total / 1073741824),
+      gib(active + wired + comp), gib(free + spec), gib(inactive), gib(comp)
+  }'

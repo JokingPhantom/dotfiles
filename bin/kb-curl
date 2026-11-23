@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# kb-curl: fetch a URL, following redirects, and print status, type, size, and time to stderr
+#
+# Usage: kb-curl [OPTIONS] URL       e.g.  kb-curl -I https://example.com
+# The summary goes to stderr, so stdout stays clean for piping into jq or a file.
+exec curl -sS -L --compressed \
+  -w '%{stderr}\n%{http_code}  %{content_type}  %{size_download} bytes  %{time_total}s  %{url_effective}\n' \
+  "$@"

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# kb-open: open a file, directory, or URL in the desktop's default app
+#
+# Usage: kb-open [PATH|URL]      (default: current directory)
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+target=${1:-.}
+case $(kb_os) in
+  macos) exec open "$target" ;;
+  wsl)
+    if kb_have wslview; then exec wslview "$target"; fi
+    case $target in *://*) ;; *) target=$(wslpath -w "$target") ;; esac
+    explorer.exe "$target" || true # explorer.exe exits 1 even when it worked
+    ;;
+  *) exec xdg-open "$target" ;;
+esac

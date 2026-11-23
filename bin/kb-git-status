@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# kb-git-status: short status with branch and ahead/behind on the first line
+#
+# Usage: kb-git-status [PATH...]
+exec git status --short --branch "$@"

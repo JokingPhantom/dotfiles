@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# kb-less: less that keeps colors, exits if the text fits on screen, and searches smart-case
+#
+# Usage: kb-less [OPTIONS] [FILE...]
+# Flags: -R colors, -F quit if one screen, -i smart-case search, -M verbose
+# status line, -j.3 show search hits a third of the way down, -x4 tab width,
+# --incsearch (less 581+) highlight as you type. Opens archives and PDFs via
+# lesspipe when installed. Also the shell's $PAGER, so git and man use it.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+opts=(-R -F -i -M -j.3 -x4)
+version=$(less --version 2>/dev/null | awk 'NR == 1 { print int($2) }')
+if [ "${version:-0}" -lt 530 ]; then opts+=(-X); fi # older less blanks the screen with -F
+if [ "${version:-0}" -ge 581 ]; then opts+=(--incsearch); fi
+
+if [ -z "${LESSOPEN:-}" ]; then
+  if kb_have lesspipe; then eval "$(SHELL=/bin/sh lesspipe)"
+  elif kb_have lesspipe.sh; then export LESSOPEN="|lesspipe.sh %s"
+  fi
+fi
+
+exec less "${opts[@]}" "$@"

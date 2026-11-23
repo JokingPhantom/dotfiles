@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# kb-git-commit: commit, or fold staged changes into the last commit, or undo the last commit
+#
+# Usage: kb-git-commit [GIT-COMMIT OPTIONS]   commit, showing the diff in the editor
+#        kb-git-commit --amend                add staged changes to the last commit, same message
+#        kb-git-commit --undo                 undo the last commit, keeping its changes staged
+case ${1:-} in
+  --amend) shift; exec git commit --amend --no-edit "$@" ;;
+  --undo)
+    git log -1 --format='Undoing %h %s' && exec git reset --soft HEAD~1 ;;
+  *) exec git commit --verbose "$@" ;;
+esac

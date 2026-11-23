@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# kb-git-branch: recent local branches, newest last (just above the prompt), with ahead/behind
+#
+# Usage: kb-git-branch [N|all]      default 30
+n=${1:-30}
+[ "$n" = all ] && n=0
+color=never
+[ -t 1 ] && color=always
+git for-each-ref --sort=-committerdate --count="$n" --color="$color" refs/heads/ \
+  --format='%(HEAD) %(color:yellow)%(align:40)%(refname:short)%(end)%(color:reset) %(color:red)%(objectname:short)%(color:reset) %(color:green)%(align:15)%(committerdate:relative)%(end)%(color:reset) %(color:magenta)%(align:12)%(upstream:track)%(end)%(color:reset) %(contents:subject) %(color:blue)- %(authorname)%(color:reset)' |
+  awk '{ l[NR] = $0 } END { for (i = NR; i > 0; i--) print l[i] }'

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# kb-ping: ping 5 times and stop (default host 1.1.1.1, for "am I online?")
+#
+# Usage: kb-ping [HOST] [OPTIONS]
+[ $# -eq 0 ] && set -- 1.1.1.1
+exec ping -c 5 "$@"

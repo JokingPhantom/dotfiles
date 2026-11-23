@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# kb-pbpaste: print the system clipboard
+#
+# Usage: kb-pbpaste [> FILE]
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if [ "$(kb_os)" = macos ]; then exec pbpaste
+elif [ "$(kb_os)" = wsl ]; then powershell.exe -NoProfile -Command Get-Clipboard | tr -d '\r'
+elif [ -n "${WAYLAND_DISPLAY:-}" ] && kb_have wl-paste; then exec wl-paste
+elif [ -n "${DISPLAY:-}" ] && kb_have xclip; then exec xclip -selection clipboard -o
+elif [ -n "${DISPLAY:-}" ] && kb_have xsel; then exec xsel --clipboard --output
+else kb_die "no clipboard tool found"
+fi

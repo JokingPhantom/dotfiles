@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# kb-netstat: listening ports and the processes behind them
+#
+# Usage: kb-netstat [PORT]
+# Processes owned by other users show only under sudo.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if [ "$(kb_os)" = macos ]; then
+  out=$(lsof -nP -iTCP -sTCP:LISTEN 2>/dev/null)
+elif kb_have ss; then
+  out=$(ss -tulpn 2>/dev/null)
+else
+  out=$(netstat -tulpn 2>/dev/null)
+fi
+
+if [ -n "${1:-}" ]; then
+  printf '%s\n' "$out" | awk -v port=":$1" 'NR == 1 || index($0, port " ") || $0 ~ port "$"'
+else
+  printf '%s\n' "$out"
+fi

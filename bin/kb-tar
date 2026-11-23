@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# kb-tar: extract any archive (tar.*, zip, gz, bz2, xz, zst, 7z, rar) into the current directory
+#
+# Usage: kb-tar ARCHIVE...        extract
+#        kb-tar -l ARCHIVE...     list contents
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+list=0
+if [ "${1:-}" = -l ]; then list=1; shift; fi
+[ $# -gt 0 ] || kb_die "usage: kb-tar [-l] ARCHIVE..."
+
+for f in "$@"; do
+  [ -f "$f" ] || kb_die "no such file: $f"
+  case $f in
+    *.tar | *.tar.* | *.tgz | *.tbz | *.tbz2 | *.txz | *.tzst)
+      if [ $list = 1 ]; then tar -tvf "$f"; else tar -xvf "$f"; fi ;; # tar detects compression itself
+    *.zip | *.jar)
+      if [ $list = 1 ]; then unzip -l "$f"; else unzip "$f"; fi ;;
+    *.7z) if [ $list = 1 ]; then 7z l "$f"; else 7z x "$f"; fi ;;
+    *.rar) if [ $list = 1 ]; then unrar l "$f"; else unrar x "$f"; fi ;;
+    *.gz) if [ $list = 1 ]; then gzip -l "$f"; else gunzip -k "$f"; fi ;;
+    *.bz2) [ $list = 1 ] || bunzip2 -k "$f" ;;
+    *.xz) if [ $list = 1 ]; then xz -l "$f"; else unxz -k "$f"; fi ;;
+    *.zst) [ $list = 1 ] || unzstd "$f" ;;
+    *) kb_die "don't know how to extract $f" ;;
+  esac || exit
+done

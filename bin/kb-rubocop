@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# kb-rubocop: autocorrect the Ruby files this branch changed (rubocop -A)
+#
+# Usage: kb-rubocop [BASE]      BASE defaults to origin's default branch
+files=()
+while IFS= read -r f; do [ -n "$f" ] && files+=("$f"); done < <(kb-git-changed ${1:+"$1"} -- '*.rb' '*.rake')
+[ ${#files[@]} -gt 0 ] || { echo "No changed Ruby files."; exit 0; }
+cd "$(git rev-parse --show-toplevel)" || exit
+exec bundle exec rubocop -A "${files[@]}"

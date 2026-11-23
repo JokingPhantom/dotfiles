@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# kb-tsv2csv: convert tab-separated input (e.g. mysql -B) to CSV
+#
+# Usage: kb-mysql -B -e 'select ...' | kb-tsv2csv > out.csv
+# Undoes mysql --batch escaping (\t \n \\) and quotes fields as RFC 4180 requires.
+exec awk 'BEGIN { FS = "\t"; OFS = "," }
+{
+  for (i = 1; i <= NF; i++) {
+    f = $i
+    gsub(/\\\\/, "\001", f); gsub(/\\t/, "\t", f); gsub(/\\n/, "\n", f); gsub(/\001/, "\\", f)
+    if (f ~ /[",\n\r]/) { gsub(/"/, "\"\"", f); f = "\"" f "\"" }
+    $i = f
+  }
+  print
+}' "$@"

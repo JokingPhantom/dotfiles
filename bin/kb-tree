@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# kb-tree: directory tree, 2 levels deep, skipping .git and ignored files
+#
+# Usage: kb-tree [DEPTH] [PATH]
+# Uses eza, then tree, then find.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+depth=2
+case ${1:-} in '' | *[!0-9]*) ;; *) depth=$1; shift ;; esac
+dir=${1:-.}
+
+if kb_have eza; then
+  exec eza --tree --level="$depth" --all --git-ignore --ignore-glob=.git --group-directories-first "$dir"
+elif kb_have tree; then
+  exec tree -C -a -L "$depth" --dirsfirst -I '.git|node_modules' "$dir"
+else
+  find "$dir" -mindepth 1 -maxdepth "$depth" -not -path '*/.git*' -not -path '*/node_modules*' | sort |
+    awk -v root="$dir" '{ p = substr($0, length(root) + 2); n = gsub("/", "/", p); printf "%*s%s\n", n * 2, "", p }'
+fi

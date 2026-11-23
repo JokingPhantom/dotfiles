@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# kb-tail: follow a growing file in less, like tail -f but scrollable and searchable
+#
+# Usage: kb-tail FILE
+# Ctrl-C stops following so you can scroll and search; F resumes; q quits.
+exec less -R -i -M +F "$@"

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# kb-pbcopy: copy stdin or files to the system clipboard, on any OS and over ssh
+#
+# Usage: COMMAND | kb-pbcopy      or      kb-pbcopy FILE...
+# macOS pbcopy, WSL clip.exe, Wayland wl-copy, X11 xclip/xsel. Otherwise (e.g.
+# over ssh) an OSC 52 escape, which most terminals turn into a local copy.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+copy() {
+  if [ "$(kb_os)" = macos ]; then pbcopy
+  elif [ "$(kb_os)" = wsl ]; then iconv -f UTF-8 -t UTF-16LE | clip.exe # clip.exe garbles UTF-8
+  elif [ -n "${WAYLAND_DISPLAY:-}" ] && kb_have wl-copy; then wl-copy
+  elif [ -n "${DISPLAY:-}" ] && kb_have xclip; then xclip -selection clipboard
+  elif [ -n "${DISPLAY:-}" ] && kb_have xsel; then xsel --clipboard --input
+  else printf '\033]52;c;%s\a' "$(base64 | tr -d '\n')" >/dev/tty
+  fi
+}
+
+cat "$@" | copy

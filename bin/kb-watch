@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# kb-watch: rerun a command every 2 seconds, highlighting what changed
+#
+# Usage: kb-watch [-n SECONDS] COMMAND...
+# Uses watch when installed (not on stock macOS); otherwise a clear-and-rerun loop.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+interval=2
+if [ "${1:-}" = -n ]; then interval=$2; shift 2; fi
+[ $# -gt 0 ] || kb_die "usage: kb-watch [-n SECONDS] COMMAND..."
+
+if kb_have watch; then exec watch -c -d -n "$interval" -- "$@"; fi
+while :; do
+  clear
+  printf 'Every %ss: %s    %s\n\n' "$interval" "$*" "$(date '+%H:%M:%S')"
+  "$@"
+  sleep "$interval"
+done

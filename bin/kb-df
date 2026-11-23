@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# kb-df: disk usage of real filesystems, human sizes, without tmpfs/snap/overlay noise
+#
+# Usage: kb-df [PATH...]
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if kb_gnu df; then
+  exec df -hT -x tmpfs -x devtmpfs -x squashfs -x overlay -x efivarfs -x rootfs "$@"
+fi
+exec df -hl "$@"

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# kb-top: interactive process viewer sorted by CPU (btop or htop when installed)
+#
+# Usage: kb-top [OPTIONS]
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if tool=$(kb_first btop htop); then exec "$tool" "$@"; fi
+if [ "$(kb_os)" = macos ]; then exec top -o cpu -s 2 "$@"; fi
+exec top -o %CPU "$@"

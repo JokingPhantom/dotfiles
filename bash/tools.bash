@@ -85,6 +85,16 @@ if __dotfiles_have fzf; then
   fi
 fi
 
+# Give kb-git-* the matching git completions (branches, refs, options).
+if declare -F _completion_loader >/dev/null; then _completion_loader git 2>/dev/null; fi
+if declare -F __git_complete >/dev/null; then
+  __git_complete kb-git-log _git_log
+  __git_complete kb-git-switch _git_switch
+  __git_complete kb-git-changed _git_diff
+  __git_complete kb-git-status _git_status
+  __git_complete kb-git-commit _git_commit
+fi
+
 # delta: syntax-highlighted git diffs. Set through the environment so git/config
 # stays valid on machines without delta (interactive.diffFilter would break add -p).
 if __dotfiles_have delta; then

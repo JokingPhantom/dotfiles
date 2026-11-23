@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# kb-find: find files whose name contains PATTERN, including hidden, skipping .git
+#
+# Usage: kb-find [PATTERN] [PATH]
+# fd (regex, respects .gitignore) when installed; otherwise a case-insensitive
+# find -iname '*PATTERN*' that skips .git and node_modules.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if fd=$(kb_first fd fdfind); then
+  exec "$fd" --hidden --exclude .git "$@"
+fi
+exec find "${2:-.}" \( -name .git -o -name node_modules \) -prune -o -iname "*${1:-}*" -print

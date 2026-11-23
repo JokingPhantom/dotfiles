@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# kb-ls: long listing with hidden files, human sizes, directories first, ISO dates
+#
+# Usage: kb-ls [OPTIONS] [PATH...]    (options go to eza or ls)
+# Uses eza (adds a git status column) when installed, else GNU or BSD ls.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if kb_have eza; then
+  exec eza -alF --git --group-directories-first --time-style=long-iso "$@"
+elif kb_gnu ls; then
+  exec ls -alFh --group-directories-first --time-style=long-iso --color=auto "$@"
+else
+  CLICOLOR=1 exec ls -alFhG "$@"
+fi

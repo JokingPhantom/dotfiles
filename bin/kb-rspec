@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# kb-rspec: run the specs for what this branch changed
+#
+# Usage: kb-rspec [BASE]      BASE defaults to origin's default branch
+# Runs changed *_spec.rb files plus the spec mirroring each changed file under
+# app/ or lib/ (app/models/x.rb -> spec/models/x_spec.rb, lib/y.rb -> spec/lib/y_spec.rb).
+cd "$(git rev-parse --show-toplevel)" || exit
+specs=()
+while IFS= read -r f; do
+  case $f in
+    spec/*_spec.rb) spec=$f ;;
+    app/*.rb) spec=spec/${f#app/}; spec=${spec%.rb}_spec.rb ;;
+    lib/*.rb) spec=spec/$f; spec=${spec%.rb}_spec.rb ;;
+    *) continue ;;
+  esac
+  [ -f "$spec" ] && specs+=("$spec")
+done < <(kb-git-changed ${1:+"$1"})
+
+[ ${#specs[@]} -gt 0 ] || { echo "No specs for the changed files."; exit 0; }
+unique=()
+while IFS= read -r s; do unique+=("$s"); done < <(printf '%s\n' "${specs[@]}" | sort -u)
+specs=("${unique[@]}")
+printf 'RSpec:\n'; printf '  %s\n' "${specs[@]}"
+exec bundle exec rspec "${specs[@]}"

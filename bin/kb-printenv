@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# kb-printenv: environment sorted, secrets masked; one entry per line for PATH-like variables
+#
+# Usage: kb-printenv          all variables, values of *TOKEN*, *SECRET*, *KEY*, ... masked
+#        kb-printenv NAME     one variable; colon-separated lists split one per line
+# Use plain printenv when you really need a secret's value.
+if [ $# -gt 0 ]; then
+  value=$(printenv "$1") || exit
+  case $value in *:*) printf '%s\n' "$value" | tr ':' '\n' ;; *) printf '%s\n' "$value" ;; esac
+  exit
+fi
+
+printenv | LC_ALL=C sort | awk '
+  {
+    eq = index($0, "="); name = substr($0, 1, eq - 1)
+    if (toupper(name) ~ /TOKEN|SECRET|PASSW|API_?KEY|PRIVATE|CREDENTIAL|AUTH|_KEY$/) {
+      print name "=***"
+    } else {
+      print
+    }
+  }'

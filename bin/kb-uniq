@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# kb-uniq: count identical lines, most frequent first
+#
+# Usage: kb-uniq [FILE...]        e.g.  cut -d' ' -f1 access.log | kb-uniq | head
+sort "$@" | uniq -c | sort -rn

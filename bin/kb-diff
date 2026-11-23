@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# kb-diff: unified, colored diff of two files or directories (delta when installed)
+#
+# Usage: kb-diff [OPTIONS] OLD NEW
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if [ $# -eq 2 ] && kb_have delta; then
+  exec delta "$@"
+fi
+opts=(-u)
+if [ -d "${*: -1}" ]; then opts+=(-r); fi
+if diff --color=auto /dev/null /dev/null >/dev/null 2>&1; then opts+=(--color=auto); fi
+exec diff "${opts[@]}" "$@"

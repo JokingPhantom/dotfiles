@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# kb-du: size of each item in a directory, largest last
+#
+# Usage: kb-du [PATH...]
+[ $# -eq 0 ] && set -- .
+du -h -d 1 "$@" 2>/dev/null | sort -h

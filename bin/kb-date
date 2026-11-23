@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# kb-date: now in local time, UTC, and epoch seconds; or convert an epoch timestamp
+#
+# Usage: kb-date                  now
+#        kb-date 1700000000       epoch seconds (or milliseconds) to local and UTC
+#        kb-date '2026-01-02 3pm' a date string to epoch (GNU date only)
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+local_fmt='+%Y-%m-%d %H:%M:%S %Z (%z)'
+utc_fmt='+%Y-%m-%dT%H:%M:%SZ'
+
+if [ $# -eq 0 ]; then
+  printf 'local  %s\nutc    %s\nepoch  %s\n' "$(date "$local_fmt")" "$(date -u "$utc_fmt")" "$(date +%s)"
+  exit
+fi
+
+case $1 in
+  *[!0-9]*)
+    kb_gnu date || kb_die "parsing date strings needs GNU date (brew install coreutils)"
+    epoch=$(date -d "$*" +%s) || exit ;;
+  *) epoch=$1; [ ${#epoch} -ge 13 ] && epoch=$((epoch / 1000)) ;;
+esac
+
+if kb_gnu date; then
+  l=$(date -d "@$epoch" "$local_fmt"); u=$(date -u -d "@$epoch" "$utc_fmt")
+else
+  l=$(date -r "$epoch" "$local_fmt"); u=$(date -u -r "$epoch" "$utc_fmt")
+fi
+printf 'local  %s\nutc    %s\nepoch  %s\n' "$l" "$u" "$epoch"

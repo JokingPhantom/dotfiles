@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# kb-grep: recursive search with line numbers, skipping .git, binaries, and ignored files
+#
+# Usage: kb-grep [OPTIONS] PATTERN [PATH...]
+# ripgrep with smart-case (case-insensitive unless PATTERN has capitals) and
+# hidden files. Without rg: grep -rIn excluding .git and node_modules.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if kb_have rg; then
+  exec rg --smart-case --hidden --glob '!.git' "$@"
+fi
+
+# BSD grep -r reads stdin when given no path, so search . explicitly.
+operands=0
+for arg in "$@"; do case $arg in -*) ;; *) operands=$((operands + 1)) ;; esac; done
+if [ "$operands" -le 1 ]; then set -- "$@" .; fi
+exec grep -rIn --color=auto --exclude-dir=.git --exclude-dir=node_modules "$@"

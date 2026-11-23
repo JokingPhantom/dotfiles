@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# kb-cat: print files with syntax highlighting, line numbers, and git changes (bat)
+#
+# Usage: kb-cat FILE...
+# Plain output when piped. Falls back to cat when bat isn't installed.
+# shellcheck source=lib/kb.sh
+. "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
+
+if bat=$(kb_first bat batcat); then
+  exec "$bat" --paging=never --style=numbers,changes,header "$@"
+fi
+exec cat "$@"
