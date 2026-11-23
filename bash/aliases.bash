@@ -9,14 +9,15 @@ if ! __dotfiles_have fd && __dotfiles_have fdfind; then
   alias fd='fdfind'
 fi
 
-# ls
+# ls (detect GNU ls before any ls alias exists)
+__gnu_ls=; if command ls --color=auto -d . >/dev/null 2>&1; then __gnu_ls=1; fi
 if __dotfiles_have eza; then
   alias ls='eza --group-directories-first'
   alias ll='eza -alF --git --group-directories-first --time-style=long-iso'
   alias la='eza -a --group-directories-first'
   alias l='eza -F --group-directories-first'
   alias lt='eza --tree --level=2 --git-ignore'
-elif ls --color=auto -d . >/dev/null 2>&1; then # GNU ls
+elif [ -n "$__gnu_ls" ]; then
   alias ls='ls --color=auto --group-directories-first'
   alias ll='ls -alFh --time-style=long-iso'
   alias la='ls -A'
@@ -26,6 +27,7 @@ else # BSD/macOS ls
   alias la='ls -A'
   alias l='ls -CF'
 fi
+unset __gnu_ls
 
 # grep (egrep/fgrep are deprecated and warn on grep 3.8+)
 alias grep='grep --color=auto'

@@ -3,11 +3,12 @@ on: [push, pull_request]
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install bash 5 and shellcheck (macOS)
         if: runner.os == 'macOS'
         run: brew install bash shellcheck

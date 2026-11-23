@@ -32,7 +32,7 @@ __prompt_command() {
   local status=$?
   history -a
 
-  __prompt_time= __prompt_duration=
+  __prompt_time='' __prompt_duration=''
   if [ -n "${EPOCHREALTIME:-}" ]; then
     local now_us=${EPOCHREALTIME//[!0-9]/}
     printf -v __prompt_time '%(%H:%M:%S)T.%s' -1 "${now_us: -6:3}"
@@ -64,7 +64,7 @@ __prompt_setup() {
   local title='\[\e]0;\u@\h: \w\a\]'
   case $TERM in xterm* | rxvt* | screen* | tmux*) ;; *) title= ;; esac
 
-  PS1="$title$cyan[\${__prompt_time}$reset\${__prompt_duration:+ | }$yellow\${__prompt_duration}$cyan]$reset "
+  PS1="$title${cyan}[\${__prompt_time}$reset\${__prompt_duration:+ | }$yellow\${__prompt_duration}$cyan]$reset "
   PS1+="$magenta\u@\h$reset:$green\w$reset"
   PS1+="\${__prompt_branch:+ $blue(\${__prompt_branch})$reset}"
   PS1+="$red\${__prompt_status}$reset\\$ "

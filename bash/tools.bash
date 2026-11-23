@@ -72,13 +72,17 @@ if __dotfiles_have fzf; then
   if __dotfiles_have fd || __dotfiles_have fdfind; then
     FZF_DEFAULT_COMMAND="$(__dotfiles_which fd || __dotfiles_which fdfind) --type f --hidden --exclude .git"
   elif __dotfiles_have rg; then
+    # fzf runs this string through sh, so the quotes are meant literally.
+    # shellcheck disable=SC2089
     FZF_DEFAULT_COMMAND="rg --files --hidden --glob '!.git'"
   fi
   if [ -n "${FZF_DEFAULT_COMMAND:-}" ]; then
+    # shellcheck disable=SC2090
     export FZF_DEFAULT_COMMAND FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
   fi
   if __dotfiles_have bat || __dotfiles_have batcat; then
-    export FZF_CTRL_T_OPTS="--preview '$(__dotfiles_which bat || __dotfiles_which batcat) --color=always --style=numbers --line-range=:200 {}'"
+    FZF_CTRL_T_OPTS="--preview '$(__dotfiles_which bat || __dotfiles_which batcat) --color=always --style=numbers --line-range=:200 {}'"
+    export FZF_CTRL_T_OPTS
   fi
 fi
 
