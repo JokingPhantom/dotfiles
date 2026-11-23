@@ -12,7 +12,8 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 
 printf '[user]\n\tname = Test\n\temail = test@example.com\n' >"$HOME/.gitconfig"
 "$DOTFILES/install.sh" >/dev/null
-"$DOTFILES/install.sh" | grep -q 'wrote\|linked\|backup' && fail "second install changed something"
+second=$("$DOTFILES/install.sh")
+case $second in *wrote* | *linked* | *backup*) fail "second install changed something: $second" ;; esac
 grep -q 'email = test@example.com' "$HOME/.gitconfig" || fail "existing gitconfig not kept"
 [ "$(git config --global user.email)" = test@example.com ] || fail "local identity lost"
 [ "$(git config --global --includes pull.ff)" = only ] || fail "shared git config not included"
@@ -31,7 +32,8 @@ echo x >"$repo/a.rb"; echo y >"$repo/b.js"
 git -C "$repo" add a.rb
 git -C "$repo" commit -q -m second
 [ "$(git -C "$repo" changed main -- '*.rb' '*.js' | tr '\n' ' ')" = "a.rb b.js " ] || fail "git changed"
-git -C "$repo" lg | grep -q second || fail "git lg"
+lg=$(git -C "$repo" lg)
+case $lg in *second*) ;; *) fail "git lg: $lg" ;; esac
 [ "$(git -C "$repo" br | tail -1 | sed $'s/\e\\[[0-9;]*m//g' | cut -c1-9)" = "* feature" ] || fail "git br: newest branch should be last"
 
 # tsv2csv
