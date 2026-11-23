@@ -45,8 +45,8 @@ if command -v script >/dev/null 2>&1 && bash -c '[ -n "$EPOCHREALTIME" ]'; then
   cmds=$'sleep 0.3; true\nfalse\n\nexit\n'
   if script --version >/dev/null 2>&1; then # util-linux
     printf '%s' "$cmds" | DOTFILES_SSH_AGENT=0 TERM=xterm script -qec 'bash -i' /dev/null >"$TMP/pty" 2>&1 || true
-  else # BSD script
-    printf '%s' "$cmds" | DOTFILES_SSH_AGENT=0 TERM=xterm script -q /dev/null bash -i >"$TMP/pty" 2>&1 || true
+  else # BSD script: stdin EOF reaches bash as ^D at once, so hold stdin open until bash has read the commands
+    { printf '%s' "$cmds"; sleep 3; } | DOTFILES_SSH_AGENT=0 TERM=xterm script -q /dev/null bash -i >"$TMP/pty" 2>&1 || true
   fi
   grep -aqE 'Last cmd: 3[0-9]{2}ms' "$TMP/pty" || fail "prompt did not time 'sleep 0.3; true' as ~0.3s. pty output:$(tr -d '\r' <"$TMP/pty" | sed -n '1,40p' | cat -v)"
   grep -aq '\[exit 1\]' "$TMP/pty" || fail "prompt did not show exit status"
