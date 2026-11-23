@@ -8,7 +8,7 @@
 
 if kb_have eza; then
   exec eza -alF --git --group-directories-first --time-style=long-iso "$@"
-elif kb_gnu ls; then
+elif ls --group-directories-first -d . >/dev/null 2>&1; then # GNU-style ls
   exec ls -alFh --group-directories-first --time-style=long-iso --color=auto "$@"
 else
   CLICOLOR=1 exec ls -alFhG "$@"

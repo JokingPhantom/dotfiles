@@ -29,8 +29,8 @@ kb_os() {
   esac
 }
 
-# kb_gnu CMD: is CMD the GNU version (vs BSD/macOS)?
-kb_gnu() { "$1" --version 2>/dev/null | grep -q GNU; }
+# Check for features rather than for "GNU" in --version: some distributions
+# ship other implementations (uutils) that support the same GNU options.
 
 kb_die() { printf '%s: %s\n' "${0##*/}" "$*" >&2; exit 1; }
 

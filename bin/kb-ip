@@ -19,5 +19,5 @@ fi
 for iface in $(ifconfig -l); do # macOS/BSD
   addrs=$(ifconfig "$iface" | awk '$1 == "inet" || ($1 == "inet6" && $2 !~ /^fe80/) { printf "%s ", $2 }')
   status=$(ifconfig "$iface" | awk '/status:/ { print $2 }')
-  [ -n "$addrs" ] && printf '%-12s %-10s %s\n' "$iface" "${status:-UP}" "$addrs"
+  if [ -n "$addrs" ]; then printf '%-12s %-10s %s\n' "$iface" "${status:-UP}" "$addrs"; fi
 done

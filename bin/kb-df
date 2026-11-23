@@ -5,7 +5,7 @@
 # shellcheck source=lib/kb.sh
 . "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
 
-if kb_gnu df; then
+if df -hT -x tmpfs / >/dev/null 2>&1; then # GNU-style df
   exec df -hT -x tmpfs -x devtmpfs -x squashfs -x overlay -x efivarfs -x rootfs "$@"
 fi
 exec df -hl "$@"

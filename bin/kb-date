@@ -17,12 +17,12 @@ fi
 
 case $1 in
   *[!0-9]*)
-    kb_gnu date || kb_die "parsing date strings needs GNU date (brew install coreutils)"
+    date -d @0 >/dev/null 2>&1 || kb_die "parsing date strings needs GNU date (brew install coreutils)"
     epoch=$(date -d "$*" +%s) || exit ;;
   *) epoch=$1; [ ${#epoch} -ge 13 ] && epoch=$((epoch / 1000)) ;;
 esac
 
-if kb_gnu date; then
+if date -d @0 >/dev/null 2>&1; then # GNU-style date
   l=$(date -d "@$epoch" "$local_fmt"); u=$(date -u -d "@$epoch" "$utc_fmt")
 else
   l=$(date -r "$epoch" "$local_fmt"); u=$(date -u -r "$epoch" "$utc_fmt")

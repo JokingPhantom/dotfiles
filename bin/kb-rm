@@ -4,7 +4,7 @@
 # Usage: kb-rm FILE...
 # Uses trash-cli, macOS's trash (14+), or gio. rm-style flags (-r, -f, -rf)
 # are accepted and ignored. With no trash tool, falls back to rm that
-# confirms first (GNU rm -I, BSD rm -i).
+# confirms first (rm -I).
 # shellcheck source=lib/kb.sh
 . "${BASH_SOURCE[0]%/*}/../lib/kb.sh"
 
@@ -21,6 +21,5 @@ done
 if kb_have trash-put; then trash-put -- "${files[@]}"
 elif [ "$(kb_os)" = macos ] && kb_have trash; then trash "${files[@]}"
 elif kb_have gio; then gio trash -- "${files[@]}"
-elif kb_gnu rm; then exec rm -Irv -- "${files[@]}"
-else exec rm -irv -- "${files[@]}"
+else exec rm -Irv -- "${files[@]}" # -I: confirm once for >3 files or recursive (GNU and BSD)
 fi && printf 'Moved to trash: %s\n' "${files[*]}"
