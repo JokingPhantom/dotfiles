@@ -67,7 +67,10 @@ kb-diff a.txt b.txt | grep -q '^+world' || fail "kb-diff"
 [ "$(kb-uniq dup.txt | head -1 | tr -s ' ')" = " 2 x" ] || fail "kb-uniq"
 kb-du | grep -q sub || fail "kb-du"
 kb-df >/dev/null || fail "kb-df"
-tar czf arc.tgz a.txt && mkdir ex && (cd ex && kb-tar ../arc.tgz >/dev/null 2>&1 && [ -f a.txt ]) || fail "kb-tar"
+tar czf arc.tgz a.txt
+mkdir ex
+(cd ex && kb-tar ../arc.tgz >/dev/null 2>&1)
+[ -f ex/a.txt ] || fail "kb-tar"
 out=$(printf 'a\tb,c\td"e\tf\\nx\n' | kb-tsv2csv)
 [ "$out" = "$(printf 'a,"b,c","d""e","f\nx"')" ] || fail "kb-tsv2csv: $out"
 [ "$(SOME_TOKEN=abc kb-printenv | grep SOME_TOKEN)" = "SOME_TOKEN=***" ] || fail "kb-printenv masking"
