@@ -1,6 +1,6 @@
 # dotfiles
 
-Shell, git, readline, and vim settings that set up any Linux, WSL, or macOS
+zsh, bash, git, readline, and vim settings that set up any Linux, WSL, or macOS
 machine the same way, plus `kb-` commands: the standard Unix utilities with my
 preferred defaults.
 
@@ -9,10 +9,12 @@ preferred defaults.
 ```sh
 git clone https://github.com/JokingPhantom/dotfiles ~/dotfiles
 ~/dotfiles/install.sh            # add --tools to also install the optional CLI tools
-exec bash
+exec zsh                         # or: exec bash
 ```
 
-`install.sh` is safe to re-run. It moves anything it replaces to
+zsh and bash get the same prompt, history, completion, key bindings, tool
+integrations, and kb- commands; use whichever is your login shell (zsh is the
+macOS default). `install.sh` sets up both and is safe to re-run. It moves anything it replaces to
 `<file>.pre-dotfiles.<timestamp>`. `--dry-run` shows what it would change.
 
 ## kb- commands
@@ -25,10 +27,11 @@ command's usage.
 
 Each one uses a modern tool when installed (eza, bat, rg, fd, delta, btop) and
 falls back to the standard utility, handling the GNU/BSD differences between
-Linux and macOS. They're scripts in `bin/`, on `PATH` in every bash shell,
-including non-interactive ones, so they also work from scripts, other shells,
-and AI agents. The few that must change the current shell (`kb-cd`, `kb-mkdir`,
-`kb-history`, `kb-alert`, `kb-bash`) are functions in `bash/functions.bash`.
+Linux and macOS. They're scripts in `bin/`, on `PATH` in every zsh and bash
+shell, including non-interactive ones, so they also work from scripts, other
+shells, and AI agents. The few that must change the current shell (`kb-cd`,
+`kb-mkdir`, `kb-history`, `kb-alert`, `kb-zsh`/`kb-bash`) are functions in
+`zsh/functions.zsh` and `bash/functions.bash`; change both when editing one.
 
 | Files and text | |
 | --- | --- |
@@ -71,7 +74,7 @@ and AI agents. The few that must change the current shell (`kb-cd`, `kb-mkdir`,
 | `kb-mkdir DIR` | Create and cd into it |
 | `kb-history [PATTERN]` | Search history |
 | `kb-alert` | `long-command; kb-alert` notifies when done |
-| `kb-bash` | Restart the shell to reload config |
+| `kb-zsh`, `kb-bash` | Restart the shell to reload config |
 | `kb-help [CMD]` | List commands or show one's usage |
 
 | Git and dev | |
@@ -86,16 +89,17 @@ and AI agents. The few that must change the current shell (`kb-cd`, `kb-mkdir`,
 | `kb-rspec`, `kb-jest`, `kb-test` | Run the tests for what this branch changed |
 
 Typing a command's old name (`ll`, `git-log`, `c-less`, ...) prints its new
-name. That hint goes away when the block at the end of `bash/functions.bash` is
-deleted.
+name. That hint goes away when the blocks at the end of `zsh/functions.zsh` and
+`bash/functions.bash` are deleted.
 
 ### Adding one
 
 Add `bin/kb-<command>` with line 2 `# kb-<command>: summary` and a usage comment
 below it; `test/smoke.sh` checks the format. Use `lib/kb.sh` for `kb_have`,
 `kb_first`, and `kb_os`, and keep scripts bash 3.2 compatible (macOS
-`/bin/bash`). Machine-only commands go in `~/.bashrc.d/*.bash` as functions with
-the same comment format, and `kb-help` lists them too.
+`/bin/bash`). Machine-only commands go in `~/.zshrc.d/*.zsh` (or
+`~/.bashrc.d/*.bash`) as functions with the same comment format, and `kb-help`
+lists them too.
 
 ## Shell and git settings
 
@@ -103,9 +107,11 @@ the same comment format, and `kb-help` lists them too.
   It times the whole command line, shows the exit status when a command fails,
   and reads the git branch without running git.
 - History: 100k entries, timestamps, no duplicates, saved after every command.
-- Readline: case-insensitive Tab completion; Up/Down search history for what's typed.
+- Completion and keys: case-insensitive Tab completion; Up/Down search history
+  for what's typed. bash reads `inputrc`; zsh's equivalents are in
+  `zsh/completion.zsh` and `zsh/keys.zsh` (emacs keys, even with `EDITOR=vim`).
 - fzf: Ctrl-R history, Ctrl-T files, Alt-C directories.
-- Startup is about 0.3s even with nvm, rbenv, and mise; slow init scripts are
+- Startup is about 0.3s in bash and well under 0.1s in zsh, even with nvm, rbenv, and mise; slow init scripts are
   cached and Windows PATH entries are skipped on WSL.
 - git: `pull.ff=only`, `fetch.prune`, histogram diffs, `zdiff3` conflicts,
   `rerere`, `rebase.autoSquash/autoStash/updateRefs`. Needs git 2.38+.
@@ -114,26 +120,31 @@ the same comment format, and `kb-help` lists them too.
 
 | File in `$HOME`        | What it is |
 | ---------------------- | ---------- |
+| `~/.zshenv`            | Local stub that sources `zsh/zshenv.zsh` (kb- commands on PATH in every zsh) |
+| `~/.zshrc`             | Local stub that sources `zsh/init.zsh`; lines it had before install are kept below |
+| `~/.zshrc.d/*.zsh`     | Machine-only zsh settings and commands (work aliases). Not in the repo |
 | `~/.bashrc`            | Local stub that sources `bash/init.bash` |
-| `~/.bashrc.d/*.bash`   | Machine-only settings and commands (work aliases). Not in the repo |
+| `~/.bashrc.d/*.bash`   | Machine-only bash settings and commands. Not in the repo |
 | `~/.gitconfig`         | Local file that includes `git/config` first, then identity and credentials |
 | `~/.config/git/ignore` | Symlink to `git/ignore` |
 | `~/.inputrc`           | Symlink to `inputrc` |
 | `~/.vimrc`             | Symlink to `vim/vimrc` |
 
-`~/.bashrc` and `~/.gitconfig` are real files, not symlinks, so installers that
-append to `.bashrc` and `git config --global` write to this machine only.
+`~/.zshrc`, `~/.bashrc`, and `~/.gitconfig` are real files, not symlinks, so
+installers that append to them and `git config --global` write to this machine
+only.
 
 ## Requirements
 
-Bash 4.4+ for the interactive config (bash 5 for prompt timing); the `kb-`
+zsh 5.3+ for the zsh config. Bash 4.4+ for the bash interactive config (bash 5 for prompt timing); the `kb-`
 scripts also run on macOS's bash 3.2. `install.sh --tools` installs bash 5 on
 macOS.
 
 ## Test
 
 ```sh
-test/smoke.sh    # installs into a throwaway $HOME, runs the kb- commands, drives an interactive shell
+test/smoke.sh    # installs into a throwaway $HOME, runs the kb- commands, drives interactive zsh and bash
 ```
 
-CI runs it with shellcheck on Ubuntu and macOS.
+CI runs it with shellcheck on Ubuntu and macOS. shellcheck doesn't read zsh, so
+the smoke test checks `zsh/*.zsh` with `zsh -n` instead.

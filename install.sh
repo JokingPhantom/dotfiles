@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Install these dotfiles into $HOME. Safe to re-run.
 #
-#   ./install.sh            set up bash, git, readline, vim
+#   ./install.sh            set up zsh, bash, git, readline, vim
 #   ./install.sh --tools    also install optional CLI tools the kb- commands use (bat, fd, eza, delta, ...)
 #   ./install.sh --dry-run  print what would change
 #
-# ~/.bashrc and ~/.gitconfig stay machine-local files that source/include this
-# repo, rather than symlinks into it. Installers that append to ~/.bashrc and
-# `git config --global` then write to the local file, not to the repo.
+# ~/.zshrc, ~/.zshenv, ~/.bashrc and ~/.gitconfig stay machine-local files that
+# source/include this repo, rather than symlinks into it. Installers that append
+# to them and `git config --global` then write to the local file, not to the repo.
 # Anything replaced is moved aside to <file>.pre-dotfiles.<timestamp>.
 
 set -euo pipefail
@@ -72,6 +72,43 @@ EOF
   fi
 }
 
+# install_zsh_stub FILE SOURCED_FILE COMMENT: make FILE source SOURCED_FILE,
+# keeping whatever FILE already had below that line (e.g. PATH lines installers added).
+install_zsh_stub() {
+  local rc=$1 src=$2 comment=$3 old=
+  if [ -f "$rc" ] && grep -qF "$src" "$rc"; then
+    say ok "$rc"
+    return
+  fi
+  if [ -e "$rc" ] || [ -L "$rc" ]; then
+    old="$rc.pre-dotfiles.$STAMP"
+    run cp -P "$rc" "$old"
+    say backup "$rc -> $old"
+  fi
+  if [ "$DRY_RUN" = 0 ]; then
+    {
+      printf '%s\n' "$comment"
+      printf '. "%s"\n' "$src"
+      if [ -n "$old" ] && [ -f "$old" ]; then printf '\n# Kept from before dotfiles:\n'; cat "$old"; fi
+    } >"$rc.tmp"
+    rm -f "$rc" && mv "$rc.tmp" "$rc"
+  fi
+  say wrote "$rc"
+}
+
+install_zsh() {
+  local zdot=${ZDOTDIR:-$HOME}
+  install_zsh_stub "$zdot/.zshenv" "$DOTFILES/zsh/zshenv.zsh" \
+"# ~/.zshenv: machine-local; read by every zsh, interactive or not.
+# The line below puts the kb- commands on PATH. Keep this file small."
+  install_zsh_stub "$zdot/.zshrc" "$DOTFILES/zsh/init.zsh" \
+"# ~/.zshrc: machine-local. Shared settings come from $DOTFILES.
+# Put settings for this machine only (work aliases, local paths) in
+# ~/.zshrc.d/*.zsh or below the next line. Tool installers that append here
+# are fine; what they add stays on this machine."
+  run mkdir -p "$HOME/.zshrc.d"
+}
+
 install_gitconfig() {
   local gc="$HOME/.gitconfig" include="$DOTFILES/git/config"
   if [ -f "$gc" ] && grep -qF "$include" "$gc"; then
@@ -83,7 +120,7 @@ install_gitconfig() {
       {
         printf '[include]\n\tpath = %s\n' "$include"
         printf '# Machine-local settings below override the shared file above.\n'
-        [ -f "$gc.pre-dotfiles.$STAMP" ] && cat "$gc.pre-dotfiles.$STAMP"
+        if [ -f "$gc.pre-dotfiles.$STAMP" ]; then cat "$gc.pre-dotfiles.$STAMP"; fi
       } >"$gc.tmp" && mv "$gc.tmp" "$gc"
     fi
     say wrote "$gc"
@@ -97,7 +134,7 @@ install_gitconfig() {
 }
 
 install_tools() {
-  local apt_pkgs="bat fd-find ripgrep fzf eza git-delta zoxide shellcheck tmux tree htop trash-cli"
+  local apt_pkgs="zsh bat fd-find ripgrep fzf eza git-delta zoxide shellcheck tmux tree htop trash-cli"
   local brew_pkgs="bash bash-completion@2 bat fd ripgrep fzf eza git-delta zoxide shellcheck tmux tree htop watch"
   if command -v brew >/dev/null 2>&1; then
     # shellcheck disable=SC2086
@@ -111,6 +148,7 @@ install_tools() {
 }
 
 echo "dotfiles: $DOTFILES"
+install_zsh
 install_bashrc
 install_gitconfig
 link "$DOTFILES/git/ignore" "$HOME/.config/git/ignore"
@@ -118,4 +156,7 @@ link "$DOTFILES/inputrc" "$HOME/.inputrc"
 link "$DOTFILES/vim/vimrc" "$HOME/.vimrc"
 run mkdir -p "$HOME/.bashrc.d"
 [ "$TOOLS" = 1 ] && install_tools
-echo "Done. Open a new shell, or run: exec bash"
+echo "Done. Open a new shell, or run: exec ${SHELL:-zsh}"
+if [ "${SHELL##*/}" != zsh ] && command -v zsh >/dev/null 2>&1; then
+  say todo "to make zsh your login shell: chsh -s $(command -v zsh)"
+fi
