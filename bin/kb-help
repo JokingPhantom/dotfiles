@@ -4,10 +4,11 @@
 # Usage: kb-help              list all commands
 #        kb-help kb-COMMAND   usage for one command
 # Commands are bin/kb-* scripts plus shell functions documented with a
-# "# kb-NAME: summary" comment in bash/functions.bash or ~/.bashrc.d/*.bash.
+# "# kb-NAME: summary" comment in bash/functions.bash, zsh/functions.zsh,
+# ~/.bashrc.d/*.bash, or ~/.zshrc.d/*.zsh.
 DOTFILES=${DOTFILES:-$(cd "${BASH_SOURCE[0]%/*}/.." && pwd)}
-sources=("$DOTFILES/bash/functions.bash")
-for f in "$HOME"/.bashrc.d/*.bash; do [ -r "$f" ] && sources+=("$f"); done
+sources=("$DOTFILES/bash/functions.bash" "$DOTFILES/zsh/functions.zsh")
+for f in "$HOME"/.bashrc.d/*.bash "$HOME"/.zshrc.d/*.zsh; do [ -r "$f" ] && sources+=("$f"); done
 
 if [ $# -gt 0 ]; then
   name=$1
@@ -28,4 +29,4 @@ fi
 {
   for f in "$DOTFILES"/bin/kb-*; do sed -n '2s/^# //p' "$f"; done
   grep -h '^# kb-[a-z0-9-]*: ' "${sources[@]}" | sed 's/^# //'
-} | sort | awk -F': ' '{ name = $1; sub(/^[^:]*: /, ""); printf "%-28s %s\n", name, $0 }'
+} | sort -u | awk -F': ' '{ name = $1; sub(/^[^:]*: /, ""); printf "%-28s %s\n", name, $0 }'

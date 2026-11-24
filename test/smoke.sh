@@ -8,9 +8,11 @@ DOTFILES=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 export HOME=$TMP/home
+unset ZDOTDIR
 mkdir -p "$HOME"
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
+echo 'export FROM_BEFORE=1' >"$HOME/.zshrc" # an installer's line, which install must keep
 printf '[user]\n\tname = Test\n\temail = test@example.com\n' >"$HOME/.gitconfig"
 "$DOTFILES/install.sh" >/dev/null
 second=$("$DOTFILES/install.sh")
@@ -18,6 +20,7 @@ case $second in *wrote* | *linked* | *backup*) fail "second install changed some
 grep -q 'email = test@example.com' "$HOME/.gitconfig" || fail "existing gitconfig not kept"
 [ "$(git config --global user.email)" = test@example.com ] || fail "local identity lost"
 [ "$(git config --global --includes pull.ff)" = only ] || fail "shared git config not included"
+grep -q 'FROM_BEFORE' "$HOME/.zshrc" || fail "existing zshrc lines not kept"
 
 # Interactive shell: startup must be silent on stderr, and kb- functions defined.
 DOTFILES_SSH_AGENT=0 bash -i -c 'type kb-cd kb-mkdir kb-alert kb-history kb-bash kb-ls __prompt_command >/dev/null' \
@@ -86,6 +89,20 @@ kb-netstat >/dev/null || fail "kb-netstat"
 kb-help | grep -q '^kb-ls ' || fail "kb-help"
 kb-help kb-tar | grep -q Usage || fail "kb-help kb-tar"
 
+# zsh: same checks as bash, when zsh is installed.
+if command -v zsh >/dev/null 2>&1; then
+  for f in "$DOTFILES"/zsh/*.zsh; do zsh -n "$f" || fail "zsh syntax: $f"; done
+  DOTFILES_SSH_AGENT=0 zsh -i -c 'whence -w kb-cd kb-mkdir kb-alert kb-history kb-zsh __prompt_precmd >/dev/null && [ "$FROM_BEFORE" = 1 ]' \
+    2>"$TMP/zstderr" </dev/null || fail "zsh interactive startup: $(cat "$TMP/zstderr")"
+  grep . "$TMP/zstderr" && fail "zsh startup wrote to stderr"
+  hint=$(DOTFILES_SSH_AGENT=0 zsh -i -c 'll' 2>&1 </dev/null || true)
+  case $hint in *"ll is now kb-ls"*) ;; *) fail "zsh renamed hint for ll: $hint" ;; esac
+  [ "$(zsh -c 'command -v kb-ls' </dev/null)" = "$DOTFILES/bin/kb-ls" ] ||
+    fail "kb-ls not on PATH in a non-interactive zsh"
+  kb-help | grep -q '^kb-zsh ' || fail "kb-help should list zsh functions"
+  [ "$(kb-help | grep -c '^kb-cd ')" = 1 ] || fail "kb-help lists kb-cd twice"
+fi
+
 # Prompt timing (bash 5+): drive a real interactive shell through a pty.
 if command -v script >/dev/null 2>&1 && bash -c '[ -n "$EPOCHREALTIME" ]'; then
   cmds=$'sleep 0.3; true\nfalse\n\nexit\n'
@@ -96,6 +113,16 @@ if command -v script >/dev/null 2>&1 && bash -c '[ -n "$EPOCHREALTIME" ]'; then
   fi
   grep -aqE 'Last cmd: ([3-9][0-9]{2}ms|[0-9]+\.[0-9]{3}s)' "$TMP/pty" || fail "prompt did not time 'sleep 0.3; true' as ~0.3s. pty output:$(tr -d '\r' <"$TMP/pty" | sed -n '1,40p' | cat -v)"
   grep -aq '\[exit 1\]' "$TMP/pty" || fail "prompt did not show exit status"
+fi
+if command -v script >/dev/null 2>&1 && command -v zsh >/dev/null 2>&1; then
+  cmds=$'sleep 0.3; true\nfalse\n\nexit\n'
+  if script --version >/dev/null 2>&1; then
+    printf '%s' "$cmds" | DOTFILES_SSH_AGENT=0 TERM=xterm script -qec 'zsh -i' /dev/null >"$TMP/zpty" 2>&1 || true
+  else
+    { printf '%s' "$cmds"; sleep 3; } | DOTFILES_SSH_AGENT=0 TERM=xterm script -q /dev/null zsh -i >"$TMP/zpty" 2>&1 || true
+  fi
+  grep -aqE 'Last cmd: ([3-9][0-9]{2}ms|[0-9]+\.[0-9]{3}s)' "$TMP/zpty" || fail "zsh prompt did not time 'sleep 0.3; true'. pty output:$(tr -d '\r' <"$TMP/zpty" | sed -n '1,40p' | cat -v)"
+  grep -aq '\[exit 1\]' "$TMP/zpty" || fail "zsh prompt did not show exit status"
 fi
 
 echo "smoke: ok"
