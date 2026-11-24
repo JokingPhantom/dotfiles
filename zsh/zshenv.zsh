@@ -11,3 +11,7 @@ case ":$PATH:" in
   *":$DOTFILES/bin:"*) ;;
   *) export PATH="$PATH:$DOTFILES/bin" ;;
 esac
+
+# Debian/Ubuntu's /etc/zsh/zshrc runs compinit before ~/.zshrc unless this is
+# set. completion.zsh runs it once, cached, so skip the system's extra run.
+skip_global_compinit=1
