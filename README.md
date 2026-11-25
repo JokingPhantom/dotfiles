@@ -111,6 +111,10 @@ lists them too.
   for what's typed. bash reads `inputrc`; zsh's equivalents are in
   `zsh/completion.zsh` and `zsh/keys.zsh` (emacs keys, even with `EDITOR=vim`).
 - fzf: Ctrl-R history, Ctrl-T files, Alt-C directories.
+- No aliases: the color defaults for `ls`, `grep`, and `diff` are functions
+  (`zsh/defaults.zsh`, `bash/defaults.bash`), and zsh's built-in `run-help`
+  and `which-command` aliases are replaced too, so `alias` lists only the ones
+  you add in `~/.zshrc.d/` or `~/.bashrc.d/`.
 - Startup is about 0.3s in bash and well under 0.1s in zsh, even with nvm, rbenv, and mise; slow init scripts are
   cached and Windows PATH entries are skipped on WSL.
 - git: `pull.ff=only`, `fetch.prune`, histogram diffs, `zdiff3` conflicts,
@@ -122,9 +126,9 @@ lists them too.
 | ---------------------- | ---------- |
 | `~/.zshenv`            | Local stub that sources `zsh/zshenv.zsh` (kb- commands on PATH in every zsh) |
 | `~/.zshrc`             | Local stub that sources `zsh/init.zsh`; lines it had before install are kept below |
-| `~/.zshrc.d/*.zsh`     | Machine-only zsh settings and commands (work aliases). Not in the repo |
+| `~/.zshrc.d/*.zsh`     | Machine-only zsh settings, commands, and your own aliases. Not in the repo |
 | `~/.bashrc`            | Local stub that sources `bash/init.bash` |
-| `~/.bashrc.d/*.bash`   | Machine-only bash settings and commands. Not in the repo |
+| `~/.bashrc.d/*.bash`   | Machine-only bash settings, commands, and your own aliases. Not in the repo |
 | `~/.gitconfig`         | Local file that includes `git/config` first, then identity and credentials |
 | `~/.config/git/ignore` | Symlink to `git/ignore` |
 | `~/.inputrc`           | Symlink to `inputrc` |
