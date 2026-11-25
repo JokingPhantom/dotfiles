@@ -5,7 +5,7 @@
 
 [[ -o interactive ]] || return 0
 
-for __dotfiles_module in env history aliases functions completion keys tools prompt; do
+for __dotfiles_module in env history defaults functions completion keys tools prompt; do
   . "$DOTFILES/zsh/$__dotfiles_module.zsh"
 done
 unset __dotfiles_module

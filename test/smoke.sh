@@ -27,6 +27,10 @@ DOTFILES_SSH_AGENT=0 bash -i -c 'type kb-cd kb-mkdir kb-alert kb-history kb-bash
   2>"$TMP/stderr" </dev/null || fail "interactive startup: $(cat "$TMP/stderr")"
 grep -v -e 'no job control' -e 'cannot set terminal process group' "$TMP/stderr" | grep . && fail "startup wrote to stderr"
 
+# `alias` lists only the user's own aliases; the color defaults are functions.
+out=$(DOTFILES_SSH_AGENT=0 bash -i -c 'alias; type -t grep' 2>/dev/null </dev/null)
+[ "$out" = function ] || fail "bash should define no aliases, grep as a function: $out"
+
 # Old names point to new ones.
 hint=$(DOTFILES_SSH_AGENT=0 bash -i -c 'll' 2>&1 </dev/null || true)
 case $hint in *"ll is now kb-ls"*) ;; *) fail "renamed hint for ll: $hint" ;; esac
@@ -95,6 +99,9 @@ if command -v zsh >/dev/null 2>&1; then
   DOTFILES_SSH_AGENT=0 zsh -i -c 'whence -w kb-cd kb-mkdir kb-alert kb-history kb-zsh __prompt_precmd >/dev/null && [ "$FROM_BEFORE" = 1 ]' \
     2>"$TMP/zstderr" </dev/null || fail "zsh interactive startup: $(cat "$TMP/zstderr")"
   grep . "$TMP/zstderr" && fail "zsh startup wrote to stderr"
+  out=$(DOTFILES_SSH_AGENT=0 zsh -i -c 'alias; whence -w grep run-help which-command' 2>&1 </dev/null)
+  [ "$out" = "$(printf 'grep: function\nrun-help: function\nwhich-command: function')" ] ||
+    fail "zsh should define no aliases, grep/run-help/which-command as functions: $out"
   hint=$(DOTFILES_SSH_AGENT=0 zsh -i -c 'll' 2>&1 </dev/null || true)
   case $hint in *"ll is now kb-ls"*) ;; *) fail "zsh renamed hint for ll: $hint" ;; esac
   [ "$(zsh -c 'command -v kb-ls' </dev/null)" = "$DOTFILES/bin/kb-ls" ] ||

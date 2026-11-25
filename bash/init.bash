@@ -19,7 +19,7 @@ case $- in
   *) return ;;
 esac
 
-for __dotfiles_module in env history aliases functions tools prompt; do
+for __dotfiles_module in env history defaults functions tools prompt; do
   # shellcheck source=/dev/null
   . "$DOTFILES/bash/$__dotfiles_module.bash"
 done
